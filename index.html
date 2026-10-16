@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luyện Tập Câu So Sánh Chữ 比 (HSK 3) - Gamified Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+        }
+        .chinese-text {
+            font-family: "PingFang SC", "Microsoft YaHei", "SimSun", sans-serif;
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-indigo-600 p-2 rounded-xl font-bold text-xl shadow">比</div>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight">Chinh Phục Câu So Sánh 字比</h1>
+                    <p class="text-indigo-200 text-xs">Giáo Trình & Bài Tập Gamified HSK 3</p>
+                </div>
+            </div>
+            
+            <!-- Dashboard Stats -->
+            <div class="flex items-center space-x-4 bg-indigo-700/60 backdrop-blur px-4 py-2 rounded-xl border border-indigo-500/30">
+                <div class="text-center">
+                    <span class="block text-xs text-indigo-200 uppercase font-semibold">Điểm số</span>
+                    <span id="score-display" class="text-xl font-extrabold text-yellow-300">0</span>
+                </div>
+                <div class="h-8 w-px bg-indigo-500/50"></div>
+                <div class="text-center">
+                    <span class="block text-xs text-indigo-200 uppercase font-semibold">Tiến độ</span>
+                    <span id="progress-text" class="text-sm font-bold text-white">0%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full flex flex-col md:flex-row gap-6">
+        
+        <!-- Navigation Tabs Sidebar -->
+        <aside class="w-full md:w-64 shrink-0 flex flex-col gap-2">
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 sticky top-24">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 py-2">Danh mục bài tập</div>
+                <nav class="space-y-1" id="tab-nav">
+                    <button onclick="switchTab('part1')" id="tab-part1" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm flex items-center justify-between transition-colors bg-indigo-50 text-indigo-700 font-semibold">
+                        <span>1. Điền từ chỗ trống</span>
+                        <span class="bg-indigo-200 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-bold">10 câu</span>
+                    </button>
+                    <button onclick="switchTab('part2')" id="tab-part2" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>2. Xếp từ thành câu</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">8 câu</span>
+                    </button>
+                    <button onclick="switchTab('part3')" id="tab-part3" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>3. Trắc nghiệm ABCD</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">10 câu</span>
+                    </button>
+                    <button onclick="switchTab('part4')" id="tab-part4" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>4. Sửa lỗi sai</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">8 câu</span>
+                    </button>
+                    <button onclick="switchTab('part5')" id="tab-part5" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>5. Dịch Việt - Trung</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">8 câu</span>
+                    </button>
+                    <button onclick="switchTab('part7')" id="tab-part7" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>6. Luyện nói tình huống</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">5 bài</span>
+                    </button>
+                    <button onclick="switchTab('part8')" id="tab-part8" class="tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors">
+                        <span>7. Đáp án & Ngữ pháp</span>
+                        <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-bold">Tổng hợp</span>
+                    </button>
+                </nav>
+
+                <div class="mt-6 pt-4 border-t border-slate-100 px-2">
+                    <button onclick="resetProgress()" class="w-full text-xs text-rose-500 hover:text-rose-700 font-semibold text-center py-2 hover:bg-rose-50 rounded-lg transition">
+                        🔄 Làm lại từ đầu
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="flex-1 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            
+            <!-- SECTION 1: FILL IN BLANKS -->
+            <section id="part1" class="tab-content space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 1: Điền từ vào chỗ trống</h2>
+                    <p class="text-slate-500 text-sm mt-1">Chọn hoặc điền từ thích hợp (<span class="font-semibold text-indigo-600">比, 没有, 更, 多了, 一点儿</span>) hoàn thành câu.</p>
+                </div>
+
+                <div id="p1-container" class="space-y-4">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 2: WORD ORDER -->
+            <section id="part2" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 2: Sắp xếp từ thành câu hoàn chỉnh</h2>
+                    <p class="text-slate-500 text-sm mt-1">Nhấp vào các từ theo thứ tự đúng để ghép thành câu so sánh chính xác.</p>
+                </div>
+
+                <div id="p2-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 3: MULTIPLE CHOICE -->
+            <section id="part3" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 3: Trắc nghiệm Ngữ pháp ABCD</h2>
+                    <p class="text-slate-500 text-sm mt-1">Chọn đáp án đúng nhất phù hợp với cấu trúc so sánh chữ 比 trình độ HSK 3.</p>
+                </div>
+
+                <div id="p3-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 4: ERROR CORRECTION -->
+            <section id="part4" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 4: Tìm và sửa lỗi sai</h2>
+                    <p class="text-slate-500 text-sm mt-1">Mỗi câu dưới đây có 1 lỗi sai về ngữ pháp chữ 比. Hãy nhập lại câu hoàn chỉnh đã sửa.</p>
+                </div>
+
+                <div id="p4-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 5: TRANSLATION -->
+            <section id="part5" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 5: Dịch Việt - Trung</h2>
+                    <p class="text-slate-500 text-sm mt-1">Dịch các câu sau sang tiếng Trung giản thể dùng cấu trúc chữ 比 (có hỗ trợ kiểm tra từ khóa).</p>
+                </div>
+
+                <div id="p5-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 7: SITUATIONAL SPEAKING -->
+            <section id="part7" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 6: Luyện nói theo tình huống</h2>
+                    <p class="text-slate-500 text-sm mt-1">Đọc bài thoại mẫu và thực hành đóng vai (Mỗi tình huống chứa ít nhất 2 câu chữ 比).</p>
+                </div>
+
+                <div id="p7-container" class="space-y-6">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 8: SOLUTIONS & GRAMMAR REVIEW -->
+            <section id="part8" class="tab-content hidden space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-bold text-slate-800">Phần 7: Tổng hợp Ngữ pháp & Đáp án</h2>
+                    <p class="text-slate-500 text-sm mt-1">Ghi nhớ các quy tắc quan trọng và kiểm tra đáp án chi tiết.</p>
+                </div>
+
+                <!-- Rules Box -->
+                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 space-y-3">
+                    <h3 class="text-lg font-bold text-amber-900 flex items-center gap-2">
+                        <span>📌</span> 4 Quy Tắc Cốt Lõi Cần Nhớ Khi Dùng 比
+                    </h3>
+                    <ul class="list-disc list-inside space-y-2 text-sm text-amber-950 font-medium leading-relaxed">
+                        <li><strong class="text-indigo-900">Không dùng "很", "非常", "真":</strong> Sau cấu trúc <span class="bg-amber-200 px-1.5 py-0.5 rounded font-mono">A 比 B</span> KHÔNG được dùng các phó từ chỉ mức độ như 很/非常/真. <br><span class="text-xs text-slate-600">❌ 我比他很高 (Sai) ➔ ✅ 我比他高 (Đúng)</span></li>
+                        <li><strong class="text-indigo-900">Vị trí Bổ ngữ chỉ mức độ:</strong> Bổ ngữ số lượng cụ thể hoặc chỉ mức độ ít/nhiều (<span class="font-mono">一点儿, 多了, 得多</span>) phải đặt <span class="underline decoration-amber-500">sau tính từ</span>. <br><span class="text-xs text-slate-600">✅ 今天比昨天热得多。 / 他比我大两岁。</span></li>
+                        <li><strong class="text-indigo-900">Phó từ "更" và "还":</strong> Có thể đứng trước tính từ để nhấn mạnh tính chất vượt trội hơn nữa. <br><span class="text-xs text-slate-600">✅ 这苹果比那个更大。</span></li>
+                        <li><strong class="text-indigo-900">So sánh hành động (Bổ ngữ trạng thái):</strong> Dùng với 得. <br><span class="text-xs text-slate-600">✅ 他跑得比我快。 / 他比我跑得快。</span></li>
+                    </ul>
+                </div>
+
+                <!-- Quick Quiz Test -->
+                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 space-y-4">
+                    <h3 class="text-lg font-bold text-indigo-900">⚡ Kiểm Tra Nhanh 5 Câu Cuối Bài</h3>
+                    <div id="quick-quiz-container" class="space-y-4">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Complete Answers Accordion -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <button onclick="toggleAnswers()" class="w-full bg-slate-100 px-5 py-4 font-bold text-slate-700 hover:bg-slate-200 flex justify-between items-center transition">
+                        <span>📖 Xem Toàn Bộ Đáp Án & Giải Thích Chi Tiết (Dành cho Giáo viên / Tự chấm)</span>
+                        <span id="answer-toggle-icon">🔽</span>
+                    </button>
+                    <div id="answers-content" class="hidden p-5 space-y-6 bg-slate-50 text-sm leading-relaxed">
+                        <!-- Solution detail injected dynamically -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Quiz Data Definition
+        const dataP1 = [
+            { id: 1, text: "今天天气 ___ 昨天冷得多。", answer: "比", options: ["比", "没有", "更"], hint: "Cấu trúc so sánh hơn A 比 B + Tính từ + 多了/得多" },
+            { id: 2, text: "我的汉语 ___ 他好，我还得多练习。", answer: "没有", options: ["比", "没有", "更"], hint: "Dùng '没有' cho câu so sánh kém (không bằng)" },
+            { id: 3, text: "西瓜比苹果 ___ 甜。", answer: "更", options: ["比", "没有", "更"], hint: "Trước tính từ trong câu chữ 比 có thể thêm '更'" },
+            { id: 4, text: "妹妹 ___ 姐姐高一点儿。", answer: "比", options: ["比", "没有", "更"], hint: "So sánh A với B" },
+            { id: 5, text: "这件衬衫比那件贵 ___。", answer: "多了", options: ["一点儿", "多了", "很"], hint: "Bổ ngữ chỉ mức độ nhiều đặt sau tính từ" },
+            { id: 6, text: "火车 ___ 飞机慢。", answer: "比", options: ["比", "没有", "更"], hint: "So sánh tốc độ tàu hỏa và máy bay" },
+            { id: 7, text: "这本词典 ___ 那本书重。", answer: "比", options: ["比", "没有", "更"], hint: "So sánh độ nặng" },
+            { id: 8, text: "弟弟比我小两岁，他 ___ 喜欢打篮球。", answer: "更", options: ["比", "没有", "更"], hint: "Nhấn mạnh sở thích hơn nữa" },
+            { id: 9, text: "今天的作业 ___ 昨天的少。", answer: "比", options: ["比", "没有", "更"], hint: "So sánh số lượng bài tập" },
+            { id: 10, text: "这几张照片 ___ 那张好看。", answer: "没有", options: ["比", "没有", "更"], hint: "Mấy tấm ảnh này không đẹp bằng tấm kia" }
+        ];
+
+        const dataP2 = [
+            { id: 1, words: ["哥哥", "高", "比", "我", "一点儿"], answer: "哥哥 比 我 高 一点儿", translation: "Anh trai cao hơn tôi một chút." },
+            { id: 2, words: ["苹果", "比", "贵", "香蕉", "多了"], answer: "苹果 比 香蕉 贵 多了", translation: "Táo đắt hơn chuối nhiều." },
+            { id: 3, words: ["他", "汉语", "我", "说得", "比", "好"], answer: "他 比 我 汉语 说得 好", alt: "他 汉语 说得 比 我 好", translation: "Anh ấy nói tiếng Trung tốt hơn tôi." },
+            { id: 4, words: ["今天", "冷", "昨天", "比", "更"], answer: "今天 比 昨天 更 冷", translation: "Hôm nay còn lạnh hơn hôm qua." },
+            { id: 5, words: ["这件", "那件", "便宜", "衣服", "比"], answer: "这件 衣服 比 那件 便宜", translation: "Bộ quần áo này rẻ hơn bộ kia." },
+            { id: 6, words: ["弟弟", "跑得", "我", "比", "快"], answer: "弟弟 比 我 跑得 快", alt: "弟弟 跑得 比 我 快", translation: "Em trai chạy nhanh hơn tôi." },
+            { id: 7, words: ["北京", "上海", "大", "比", "吗"], answer: "北京 比 上海 大 吗", translation: "Bắc Kinh to hơn Thượng Hải phải không?" },
+            { id: 8, words: ["吃", "我", "比", "他", "多"], answer: "我 比 他 吃 得 多", alt: "我 比 他 吃 多", translation: "Tôi ăn nhiều hơn anh ấy." }
+        ];
+
+        const dataP3 = [
+            {
+                id: 1,
+                question: "Chọn câu đúng nhất:",
+                options: ["A. 我比他很高。", "B. 我比他高。", "C. 我很高比他。", "D. 我比高他。"],
+                correct: 1,
+                explain: "Trong câu chữ 比 không được dùng phó từ chỉ mức độ '很' trước tính từ."
+            },
+            {
+                id: 2,
+                question: "Điền vào chỗ trống: 机器人的速度比人快 ___。",
+                options: ["A. 很", "B. 非常", "C. 多了", "D. 真"],
+                correct: 2,
+                explain: "Chỉ có '多了' hoặc '得多' đứng sau tính từ làm bổ ngữ chỉ mức độ."
+            },
+            {
+                id: 3,
+                question: "Dạng phủ định đúng của câu '我比他大' là:",
+                options: ["A. 我不比他大", "B. 我比他不大", "C. 我没有他大", "D. Cả A và C đều có thể dùng"],
+                correct: 3,
+                explain: "Phủ định có thể dùng '不比' (không hơn) hoặc '没有' (không bằng)."
+            },
+            {
+                id: 4,
+                question: "Chọn câu diễn đạt đúng bổ ngữ trạng thái:",
+                options: ["A. 他比我写字很好。", "B. 他写字比我好。", "C. 他比我写字得多好。", "D. 他写字很比我好。"],
+                correct: 1,
+                explain: "Cấu trúc đúng: Chủ ngữ + Động từ + Tân ngữ + 比 + B + Tính từ (hoặc dùng 得)."
+            },
+            {
+                id: 5,
+                question: "Cấu trúc nào sau đây Bị LỖI?",
+                options: ["A. A 比 B + adj + 一点儿", "B. A 比 B + 更 + adj", "C. A 比 B + 非常 + adj", "D. A 没有 B + adj"],
+                correct: 2,
+                explain: "Không kết hợp '比' với '非常'."
+            },
+            {
+                id: 6,
+                question: "Điền từ: 这张桌子比那张 ___ 大两厘米。",
+                options: ["A. 更", "B. 还", "C. 不填 (để trống)", "D. Cả A, B, C đều đúng"],
+                correct: 3,
+                explain: "Có thể giữ nguyên hoặc dùng 更/还."
+            },
+            {
+                id: 7,
+                question: "Chọn câu đúng về so sánh tuổi tác:",
+                options: ["A. 我比他大三岁。", "B. 我大他三岁比。", "C. 我比他三大岁。", "D. 我比岁他大三。"],
+                correct: 0,
+                explain: "Số lượng từ (三岁) đặt sau tính từ (大)."
+            },
+            {
+                id: 8,
+                question: "Cần điền từ gì: 这里的西瓜比苹果贵 ___ 一点儿。",
+                options: ["A. 得", "B. 不填", "C. 很", "D. 也"],
+                correct: 1,
+                explain: "'贵一点儿' đã đầy đủ, không chèn '很' hay '得'."
+            },
+            {
+                id: 9,
+                question: "Chọn cách nói tự nhiên nhất:",
+                options: ["A. 坐飞机比坐火车快多了。", "B. 坐飞机更快比坐火车。", "C. 坐飞机比坐火车很快。", "D. 坐飞机非常比坐火车快。"],
+                correct: 0,
+                explain: "Dùng '快多了' chuẩn HSK3."
+            },
+            {
+                id: 10,
+                question: "Chọn câu có nghĩa: 'Tôi không thích xem tivi bằng anh ấy':",
+                options: ["A. 我比他不喜欢看电视。", "B. 我没有他那么喜欢看电视。", "C. 我看电视比他不喜欢。", "D. 我很没有他看电视。"],
+                correct: 1,
+                explain: "A 没有 B (那么) + Động từ tâm lý."
+            }
+        ];
+
+        const dataP4 = [
+            { id: 1, wrong: "他比我很高。", correct: "他比我高。", hint: "Bỏ '很'" },
+            { id: 2, wrong: "姐姐比我大一点儿岁。", correct: "姐姐比我大岁数一点儿 / 姐姐比我大一点儿。", hint: "Bỏ '岁' ở cuối hoặc đổi '姐姐比我大两岁'" },
+            { id: 3, wrong: "这本词典比那本书非常贵。", correct: "这本词典比那本书贵得多。", hint: "Thay '非常贵' thành '贵得多' hoặc '贵多了'" },
+            { id: 4, wrong: "今天比昨天很热。", correct: "今天比昨天热。", hint: "Bỏ '很'" },
+            { id: 5, wrong: "他跑得快比我。", correct: "他跑得比我快。 / 他比我跑得快。", hint: "Chuyển 比我 lên trước tính từ/động từ" },
+            { id: 6, wrong: "我比他一点儿大。", correct: "我比他大一点儿。", hint: "Đưa 一点儿 ra sau tính từ 大" },
+            { id: 7, wrong: "这件衣服比那件更便宜得多。", correct: "这件衣服比那件便宜得多。 / 这件衣服比那件更便宜。", hint: "Không dùng cả '更' và '得多' cùng lúc" },
+            { id: 8, wrong: "小张比小王学得很好。", correct: "小张比小王学得好。", hint: "Bỏ '很' trong câu so sánh 得" }
+        ];
+
+        const dataP5 = [
+            { id: 1, vi: "Anh trai cao hơn tôi một chút.", keywords: ["哥哥", "比", "我", "高", "一点儿"], pinyin: "Gēge bǐ wǒ gāo yìdiǎnr." },
+            { id: 2, vi: "Hôm nay lạnh hơn hôm qua nhiều.", keywords: ["今天", "比", "昨天", "冷", "多了"], pinyin: "Jīntiān bǐ zuótiān lěng duōle." },
+            { id: 3, vi: "Giá dưa hấu đắt hơn chuối.", keywords: ["西瓜", "比", "香蕉", "贵"], pinyin: "Xīguā bǐ xiāngjiāo guì." },
+            { id: 4, vi: "Em trai chạy nhanh hơn em gái.", keywords: ["弟弟", "比", "妹妹", "跑得快"], pinyin: "Dìdi bǐ mèimei pǎo de kuài." },
+            { id: 5, vi: "Bắc Kinh to hơn thành phố này nhiều.", keywords: ["北京", "比", "大"], pinyin: "Běijīng bǐ zhè ge chéngshì dà duōle." },
+            { id: 6, vi: "Tôi thích uống trà hơn anh ấy.", keywords: ["我", "比", "他", "更", "喜欢"], pinyin: "Wǒ bǐ tā gèng xǐhuān hē chá." },
+            { id: 7, vi: "Tiếng Trung của cô ấy tốt hơn tôi.", keywords: ["她的汉语", "比", "我", "好"], pinyin: "Tā de Hànyǔ bǐ wǒ hǎo." },
+            { id: 8, vi: "Năm nay công việc bận hơn năm ngoái.", keywords: ["今年", "比", "去年", "忙"], pinyin: "Jīnnián bǐ qùnián máng." }
+        ];
+
+        const dataP7 = [
+            {
+                title: "Tình huống 1: So sánh hai món ăn (Liang ge cāi)",
+                dialogue: [
+                    { speaker: "A", text: "你觉得中国菜好吃的还是越南菜好吃？", vi: "Bạn thấy món Trung Quốc ngon hay món Việt Nam ngon?" },
+                    { speaker: "B", text: "我觉得四川菜比广东菜更辣，但我比喜欢四川菜更喜欢越南菜！", vi: "Tôi thấy món Tứ Xuyên cay hơn món Quảng Đông, nhưng tôi thích món Việt Nam hơn món Tứ Xuyên!" },
+                    { speaker: "A", text: "越南菜比中国菜便宜一点儿吗？", vi: "Món Việt Nam có rẻ hơn món Trung Quốc một chút không?" },
+                    { speaker: "B", text: "是的，这里的越南菜比中国菜便宜多了！", vi: "Đúng vậy, món Việt ở đây rẻ hơn món Trung Quốc nhiều!" }
+                ]
+            },
+            {
+                title: "Tình huống 2: So sánh thời tiết hai thành phố",
+                dialogue: [
+                    { speaker: "A", text: "北京的冬天比河内冷吗？", vi: "Mùa đông Bắc Kinh có lạnh hơn Hà Nội không?" },
+                    { speaker: "B", text: "北京比河内冷多了！有时还下雪呢。", vi: "Bắc Kinh lạnh hơn Hà Nội nhiều! Thỉnh thoảng còn có tuyết đấy." },
+                    { speaker: "A", text: "那夏天的天气呢？", vi: "Thế còn thời tiết mùa hè?" },
+                    { speaker: "B", text: "河内比北京更热，也比北京经常下雨。", vi: "Hà Nội nóng hơn Bắc Kinh, và cũng mưa thường xuyên hơn Bắc Kinh." }
+                ]
+            },
+            {
+                title: "Tình huống 3: So sánh học tập và thói quen",
+                dialogue: [
+                    { speaker: "A", text: "你每天起得比我早吗？", vi: "Mỗi ngày bạn thức dậy sớm hơn tôi à?" },
+                    { speaker: "B", text: "对，我比你早起半个小时。我比你更喜欢早读。", vi: "Đúng vậy, tôi dậy sớm hơn bạn nửa tiếng. Tôi thích đọc bài buổi sáng hơn bạn." }
+                ]
+            }
+        ];
+
+        const dataQuickQuiz = [
+            { q: "1. Câu nào đúng ngữ pháp?", opts: ["A. 我比他非常大。", "B. 我比他大两岁。", "C. 我大比他两岁。"], ans: 1 },
+            { q: "2. Điền từ: 今天比昨天 ___ 冷。", opts: ["A. 很", "B. 更", "C. 多了"], ans: 1 },
+            { q: "3. 'Táo rẻ hơn cam một ít' dịch là:", opts: ["A. 苹果比橙子便宜一点儿。", "B. 苹果比橙子一点儿便宜。", "C. 苹果便宜比橙子一点儿。"], ans: 0 }
+        ];
+
+        let state = {
+            score: 0,
+            completedTasks: new Set(),
+            p2Selected: {}
+        };
+
+        function initApp() {
+            renderP1();
+            renderP2();
+            renderP3();
+            renderP4();
+            renderP5();
+            renderP7();
+            renderQuickQuiz();
+            renderAnswers();
+            updateScore(0);
+        }
+
+        // Render Section 1
+        function renderP1() {
+            const container = document.getElementById('p1-container');
+            container.innerHTML = dataP1.map((item, idx) => `
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-slate-400 text-sm">#${idx + 1}</span>
+                        <div class="chinese-text text-lg font-medium text-slate-800">
+                            ${item.text.replace('___', `<select id="p1-select-${item.id}" class="mx-1 px-2 py-1 bg-white border border-slate-300 rounded-lg text-indigo-600 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">---</option>
+                                ${item.options.map(o => `<option value="${o}">${o}</option>`).join('')}
+                            </select>`)}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="checkP1(${item.id})" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Kiểm tra</button>
+                        <span id="p1-feedback-${item.id}" class="text-xs font-semibold"></span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Section 2
+        function renderP2() {
+            const container = document.getElementById('p2-container');
+            container.innerHTML = dataP2.map((item, idx) => {
+                // Shuffle words initially
+                const shuffled = [...item.words].sort(() => Math.random() - 0.5);
+                state.p2Selected[item.id] = [];
+
+                return `
+                <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">Câu ${idx + 1}</span>
+                        <span class="text-xs text-slate-500 font-medium">Dịch: ${item.translation}</span>
+                    </div>
+                    
+                    <!-- Selected Pool -->
+                    <div id="p2-pool-${item.id}" class="min-h-[48px] p-2 bg-white rounded-xl border-2 border-dashed border-slate-300 flex flex-wrap gap-2 items-center">
+                        <span class="text-xs text-slate-400 italic">Nhấp từ bên dưới để ghép câu tại đây...</span>
+                    </div>
+
+                    <!-- Available Word Chips -->
+                    <div id="p2-chips-${item.id}" class="flex flex-wrap gap-2 pt-2">
+                        ${shuffled.map((w, wIdx) => `
+                            <button onclick="selectP2Word(${item.id}, '${w}', this)" class="chinese-text px-3 py-1.5 bg-white border border-slate-200 shadow-sm rounded-lg text-slate-700 font-medium hover:bg-indigo-50 hover:border-indigo-300 transition">
+                                ${w}
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <button onclick="resetP2(${item.id})" class="text-xs text-slate-400 hover:text-slate-600">Xóa làm lại</button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="checkP2(${item.id})" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Xác nhận</button>
+                            <span id="p2-feedback-${item.id}" class="text-xs font-semibold"></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Render Section 3
+        function renderP3() {
+            const container = document.getElementById('p3-container');
+            container.innerHTML = dataP3.map((item, idx) => `
+                <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="font-semibold text-slate-800">
+                        <span class="text-indigo-600 font-bold mr-1">${idx + 1}.</span> ${item.question}
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${item.options.map((opt, oIdx) => `
+                            <label class="flex items-center p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:bg-indigo-50/50 transition">
+                                <input type="radio" name="p3-q-${item.id}" value="${oIdx}" class="text-indigo-600 focus:ring-indigo-500 mr-2">
+                                <span class="chinese-text text-sm font-medium text-slate-700">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div class="flex justify-between items-center pt-2">
+                        <span id="p3-explain-${item.id}" class="text-xs text-slate-500 italic hidden">💡 ${item.explain}</span>
+                        <button onclick="checkP3(${item.id})" class="ml-auto px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Kiểm tra</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Section 4
+        function renderP4() {
+            const container = document.getElementById('p4-container');
+            container.innerHTML = dataP4.map((item, idx) => `
+                <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full">Câu chứa lỗi #${idx + 1}</span>
+                    </div>
+                    <div class="chinese-text text-lg font-semibold text-rose-600 bg-rose-50/50 p-3 rounded-lg border border-rose-100">
+                        ❌ ${item.wrong}
+                    </div>
+                    <div>
+                        <input type="text" id="p4-input-${item.id}" placeholder="Nhập lại câu đúng tiếng Trung..." class="chinese-text w-full px-4 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span id="p4-hint-${item.id}" class="text-xs text-slate-400">Gợi ý: ${item.hint}</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="checkP4(${item.id})" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Sửa câu</button>
+                            <span id="p4-feedback-${item.id}" class="text-xs font-semibold"></span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Section 5
+        function renderP5() {
+            const container = document.getElementById('p5-container');
+            container.innerHTML = dataP5.map((item, idx) => `
+                <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="font-bold text-slate-800 text-base">
+                        ${idx + 1}. "${item.vi}"
+                    </div>
+                    <div>
+                        <input type="text" id="p5-input-${item.id}" placeholder="Gõ tiếng Trung (Giản thể)..." class="chinese-text w-full px-4 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div class="flex flex-wrap justify-between items-center gap-2 pt-1">
+                        <div class="text-xs text-slate-400">
+                            Từ khóa cần có: ${item.keywords.map(k => `<span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded mr-1">${k}</span>`).join('')}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="checkP5(${item.id})" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Chấm bài</button>
+                            <span id="p5-feedback-${item.id}" class="text-xs font-semibold"></span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Section 7
+        function renderP7() {
+            const container = document.getElementById('part7');
+            // Check if section structure exists
+            const containerBox = document.getElementById('p7-container');
+            containerBox.innerHTML = dataP7.map((item, idx) => `
+                <div class="p-5 rounded-2xl bg-indigo-50/40 border border-indigo-100 space-y-4">
+                    <h3 class="font-bold text-indigo-900 text-lg">${item.title}</h3>
+                    <div class="space-y-3">
+                        ${item.dialogue.map(d => `
+                            <div class="p-3 bg-white rounded-xl shadow-sm border border-slate-100 flex gap-3">
+                                <span class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">${d.speaker}</span>
+                                <div class="space-y-1">
+                                    <p class="chinese-text text-base text-slate-800 font-medium">${d.text}</p>
+                                    <p class="text-xs text-slate-500">${d.vi}</p>
+                                </div>
+                                <button onclick="speakText('${d.text}')" class="ml-auto text-slate-400 hover:text-indigo-600 self-center p-1" title="Phát âm">
+                                    🔊
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Quick Quiz
+        function renderQuickQuiz() {
+            const container = document.getElementById('quick-quiz-container');
+            container.innerHTML = dataQuickQuiz.map((item, idx) => `
+                <div class="p-4 bg-white rounded-xl border border-indigo-100 space-y-2">
+                    <p class="font-semibold text-slate-800 text-sm">${item.q}</p>
+                    <div class="flex flex-wrap gap-2">
+                        ${item.opts.map((o, oIdx) => `
+                            <button onclick="answerQuickQuiz(${idx}, ${oIdx})" class="px-3 py-1 bg-slate-100 hover:bg-indigo-100 text-slate-700 rounded-lg text-xs font-medium transition">
+                                ${o}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="qq-feedback-${idx}" class="text-xs font-bold"></div>
+                </div>
+            `).join('');
+        }
+
+        // Render Answers
+        function renderAnswers() {
+            const container = document.getElementById('answers-content');
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Phần 1: Điền từ vào chỗ trống</h4>
+                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
+                            ${dataP1.map(i => `<li><b>${i.answer}</b> (${i.hint})</li>`).join('')}
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Phần 2: Sắp xếp từ thành câu</h4>
+                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
+                            ${dataP2.map(i => `<li><b>${i.answer}</b> - <i>${i.translation}</i></li>`).join('')}
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Phần 3: Trắc nghiệm ABCD</h4>
+                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
+                            ${dataP3.map(i => `<li>ĐÁP ÁN: <b>${i.options[i.correct]}</b>. 解释: ${i.explain}</li>`).join('')}
+                        </ol>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Phần 4: Sửa lỗi sai</h4>
+                        <ol class="list-decimal list-inside space-y-1 mt-1 text-slate-600">
+                            ${dataP4.map(i => `<li>Câu đúng: <b>${i.correct}</b> (${i.hint})</li>`).join('')}
+                        </ol>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkP1(id) {
+            const select = document.getElementById(`p1-select-${id}`);
+            const feedback = document.getElementById(`p1-feedback-${id}`);
+            const item = dataP1.find(x => x.id === id);
+
+            if (select.value === item.answer) {
+                feedback.textContent = "✓ Đúng!";
+                feedback.className = "text-xs font-semibold text-emerald-600";
+                markCompleted(`p1-${id}`);
+            } else {
+                feedback.textContent = "✘ Chưa chính xác";
+                feedback.className = "text-xs font-semibold text-rose-500";
+            }
+        }
+
+        function selectP2Word(id, word, btnElement) {
+            const pool = document.getElementById(`p2-pool-${id}`);
+            state.p2Selected[id].push({ word, element: btnElement });
+
+            // Hide word chip
+            btnElement.classList.add('hidden');
+
+            // Refresh Pool
+            renderP2Pool(id);
+        }
+
+        function renderP2Pool(id) {
+            const pool = document.getElementById(`p2-pool-${id}`);
+            const selectedList = state.p2Selected[id];
+
+            if (selectedList.length === 0) {
+                pool.innerHTML = `<span class="text-xs text-slate-400 italic">Nhấp vào các từ bên dưới để xếp câu...</span>`;
+                return;
+            }
+
+            pool.innerHTML = selectedList.map((item, index) => `
+                <span onclick="removeP2Word(${id}, ${index})" class="chinese-text px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm font-medium cursor-pointer shadow-sm hover:bg-indigo-700 transition">
+                    ${item.word} ×
+                </span>
+            `).join('');
+        }
+
+        function removeP2Word(id, index) {
+            const removed = state.p2Selected[id].splice(index, 1)[0];
+            if (removed && removed.element) {
+                removed.element.classList.remove('hidden');
+            }
+            renderP2Pool(id);
+        }
+
+        function resetP2(id) {
+            if (state.p2Selected[id]) {
+                state.p2Selected[id].forEach(item => {
+                    if (item.element) item.element.classList.remove('hidden');
+                });
+                state.p2Selected[id] = [];
+                renderP2Pool(id);
+            }
+        }
+
+        function checkP2(id) {
+            const item = dataP2.find(x => x.id === id);
+            const userStr = state.p2Selected[id].map(x => x.word).join(" ");
+            const feedback = document.getElementById(`p2-feedback-${id}`);
+
+            if (userStr === item.answer || (item.alt && userStr === item.alt)) {
+                feedback.textContent = "✓ Sắp xếp chính xác!";
+                feedback.className = "text-xs font-semibold text-emerald-600";
+                markCompleted(`p2-${id}`);
+            } else {
+                feedback.textContent = "✘ Sai thứ tự từ";
+                feedback.className = "text-xs font-semibold text-rose-500";
+            }
+        }
+
+        function checkP3(id) {
+            const selected = document.querySelector(`input[name="p3-q-${id}"]:checked`);
+            const explain = document.getElementById(`p3-explain-${id}`);
+            const item = dataP3.find(x => x.id === id);
+
+            explain.classList.remove('hidden');
+
+            if (selected && parseInt(selected.value) === item.correct) {
+                explain.className = "text-xs text-emerald-600 font-semibold";
+                markCompleted(`p3-${id}`);
+            } else {
+                explain.className = "text-xs text-rose-500 font-semibold";
+            }
+        }
+
+        function checkP4(id) {
+            const input = document.getElementById(`p4-input-${id}`).value.trim();
+            const item = dataP4.find(x => x.id === id);
+            const feedback = document.getElementById(`p4-feedback-${id}`);
+
+            if (input === item.correct) {
+                feedback.textContent = "✓ Sửa chính xác!";
+                feedback.className = "text-xs font-semibold text-emerald-600";
+                markCompleted(`p4-${id}`);
+            } else {
+                feedback.textContent = `✘ Chưa đúng! (Đ/A: ${item.correct})`;
+                feedback.className = "text-xs font-semibold text-rose-500";
+            }
+        }
+
+        function checkP5(id) {
+            const input = document.getElementById(`p5-input-${id}`).value.trim();
+            const item = dataP5.find(x => x.id === id);
+            const feedback = document.getElementById(`p5-feedback-${id}`);
+
+            let matched = item.keywords.every(k => input.includes(k));
+
+            if (matched && input.length > 3) {
+                feedback.textContent = "✓ Rất tốt!";
+                feedback.className = "text-xs font-semibold text-emerald-600";
+                markCompleted(`p5-${id}`);
+            } else {
+                feedback.textContent = `✘ Cần chứa các từ: ${item.keywords.join(', ')}`;
+                feedback.className = "text-xs font-semibold text-rose-500";
+            }
+        }
+
+        function answerQuickQuiz(qIdx, oIdx) {
+            const item = dataQuickQuiz[qIdx];
+            const feedback = document.getElementById(`qq-feedback-${qIdx}`);
+            if (oIdx === item.ans) {
+                feedback.textContent = "✓ Chính xác!";
+                feedback.className = "text-xs font-bold text-emerald-600 mt-1";
+                markCompleted(`qq-${qIdx}`);
+            } else {
+                feedback.textContent = "✘ Bị nhầm rồi, thử lại nhé!";
+                feedback.className = "text-xs font-bold text-rose-500 mt-1";
+            }
+        }
+
+        function markCompleted(key) {
+            if (!state.completedTasks.has(key)) {
+                state.completedTasks.add(key);
+                updateScore(10);
+            }
+        }
+
+        function updateScore(points) {
+            state.score += points;
+            document.getElementById('score-display').textContent = state.score;
+
+            // Total tasks count roughly 45 items
+            const totalTasks = 47;
+            const percentage = Math.min(100, Math.round((state.completedTasks.size / totalTasks) * 100));
+            document.getElementById('progress-text').textContent = `${percentage}%`;
+
+            if (percentage === 100) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-100 flex items-center justify-between transition-colors";
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.className = "tab-btn w-full text-left px-3 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-between transition-colors bg-indigo-50 text-indigo-700";
+        }
+
+        function toggleAnswers() {
+            const content = document.getElementById('answers-content');
+            const icon = document.getElementById('answer-toggle-icon');
+            content.classList.toggle('hidden');
+            icon.textContent = content.classList.contains('hidden') ? '🔽' : '🔼';
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Trình duyệt không hỗ trợ phát âm tự động.");
+            }
+        }
+
+        function resetProgress() {
+            state.score = 0;
+            state.completedTasks.clear();
+            initApp();
+        }
+
+        // Initialize App on window load
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
